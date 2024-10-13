@@ -1,0 +1,17 @@
+{
+    "Settings": {
+      "data_folder": "data/",
+      "data_file": "dataset.csv",
+      "output_folder": "output/",
+      "observed_filename": "observed_data.csv",
+      "detrended_filename": "detrended_data.csv",
+      "trend_filename": "trend_data.csv"
+    },
+    "Inputs": {
+      "well_name": "Well_4A",
+      "start_time": "600",
+      "end_time": "624",
+      "slope": -2,
+      "use_estimated_slope": true
+    }
+  }

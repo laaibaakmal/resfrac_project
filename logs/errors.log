@@ -1,0 +1,35 @@
+ERROR:root:An unexpected error occurred: WellResult.__init__() takes 2 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "c:\Repos\resfrac_project\well_service.py", line 73, in parse_dataset
+    return WellResult(True, f"Success! Check '{app_config.output_folder}' for CSVs.", slope)
+TypeError: WellResult.__init__() takes 2 positional arguments but 4 were given
+ERROR:root:An unexpected error occurred: WellResult.__init__() takes 2 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "c:\Repos\resfrac_project\well_service.py", line 73, in parse_dataset
+    return WellResult(True, f"Success! Check '{app_config.output_folder}' for CSVs.", slope)
+TypeError: WellResult.__init__() takes 2 positional arguments but 4 were given
+ERROR:root:An unexpected error occurred: WellResult.__init__() takes 2 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "c:\Repos\resfrac_project\well_service.py", line 73, in parse_dataset
+    return WellResult(True, f"Success! Check '{app_config.output_folder}' for CSVs.", slope)
+TypeError: WellResult.__init__() takes 2 positional arguments but 4 were given
+ERROR:root:An unexpected error occurred: WellResult.__init__() takes 2 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "c:\Repos\resfrac_project\well_service.py", line 73, in parse_dataset
+    return WellResult(True, f"Success! Check '{app_config.output_folder}' for CSVs.", slope)
+TypeError: WellResult.__init__() takes 2 positional arguments but 4 were given
+ERROR:root:An unexpected error occurred: WellResult.__init__() takes 2 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "c:\Repos\resfrac_project\well_service.py", line 73, in parse_dataset
+    return WellResult(True, f"Success! Check '{app_config.output_folder}' for CSVs.", slope)
+TypeError: WellResult.__init__() takes 2 positional arguments but 4 were given
+ERROR:root:An unexpected error occurred: Result.__init__() takes 3 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "c:\Repos\resfrac_project\well_service.py", line 73, in parse_dataset
+    return WellResult(True, f"Success! Check '{app_config.output_folder}' for CSVs.", slope)
+TypeError: Result.__init__() takes 3 positional arguments but 4 were given
+ERROR:root:An unexpected error occurred: Result.__init__() takes 3 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "c:\Repos\resfrac_project\well_service.py", line 73, in parse_dataset
+    return WellResult(True, f"Success! Check '{app_config.output_folder}' for CSVs.", slope)
+TypeError: Result.__init__() takes 3 positional arguments but 4 were given
