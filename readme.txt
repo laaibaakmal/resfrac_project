@@ -3,7 +3,9 @@ This project processes well pressure data from a CSV file and outputs three CSV 
 It also plots our processed data.
 
 INSTRUCTIONS TO CLONE
-```git clone https://github.com/laaibaakmal/resfrac_project.git```
+```
+git clone https://github.com/laaibaakmal/resfrac_project.git
+```
 
 Project Structure
 There is a visual system diagram in the 'assets/' folder called 'system_diagram.png'
