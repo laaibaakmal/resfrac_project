@@ -3,13 +3,10 @@ This project processes well pressure data from a CSV file and outputs three CSV 
 It also plots our processed data.
 
 INSTRUCTIONS TO CLONE
-`
 git clone https://github.com/laaibaakmal/resfrac_project.git
 
-`
-
 Project Structure
-There is a visual system diagram in the 'assets/' folder called 'system_diagram.png'
+There is a visual system diagram in the 'assets/' folder called 'system_diagram.png'.
 I generated this project tree from: https://woochanleee.github.io/project-tree-generator/
 RESFRAC_PROJECT/
 │
@@ -94,6 +91,7 @@ detrended_data.csv: The detrended pressure data.
 trend_data.csv: The trend pressure data.
 
 After processing, the program will also plot the observed, trend, and detrended data for visualization.
+Close or save plot after viewing to finish running the program. 
 
 Logging
 Any errors encountered during the processing are logged in the logs/errors.log file. 
