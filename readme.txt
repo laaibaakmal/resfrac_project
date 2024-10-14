@@ -3,6 +3,7 @@ This project processes well pressure data from a CSV file and outputs three CSV 
 It also plots our processed data.
 
 Project Structure
+There is a visual system diagram in the 'assets/' folder called 'system_diagram.png'
 I generated this project tree from: https://woochanleee.github.io/project-tree-generator/
 RESFRAC_PROJECT/
 │
@@ -11,14 +12,14 @@ RESFRAC_PROJECT/
 ├── logs/
 │   └── errors.log              # Log file for errors encountered during processing
 ├── models/
-│   ├── config.py               # Config class handling configuration settings
-│   ├── result.py               # WellResult class
+│   ├── config.py               # Config class handling configuration settings and inputs
+│   ├── result.py               # Result class
 │   └── well_result.py          # WellResult class to return the result of the processing
 ├── output/
 │   ├── detrended_data.csv      # Output file with detrended data
 │   ├── observed_data.csv       # Output file with filtered data
 │   └── trend_data.csv          # Output file with trend data
-├── config.json                 # Configuration file for setting up input parameters
+├── config.json                 # Configuration file for setting up input parameters and file locations
 ├── program.py                  # Main program entry point
 ├── readme.txt                  # Project documentation
 ├── well_service.py             # Main service that processes well data
@@ -80,6 +81,7 @@ Place your input CSV file in the data/ folder and adjust the configuration in th
 
 Run the program:
 python program.py
+
 The program will process the CSV data and generate three output CSV files in the output/ folder:
 observed_data.csv: The filtered pressure data.
 detrended_data.csv: The detrended pressure data.

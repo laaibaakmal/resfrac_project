@@ -29,9 +29,3 @@ class Config:
         self.slope = inputs['slope']
         self.use_estimated_slope = inputs['use_estimated_slope']
 
-    def __repr__(self):
-        return (f"Config(data_folder={self.data_folder}, data_file={self.data_file}, "
-                f"output_folder={self.output_folder}, observed_filename={self.observed_filename}, "
-                f"detrended_filename={self.detrended_filename}, trend_filename={self.trend_filename}, "
-                f"well_name={self.well_name}, start_time={self.start_time}, end_time={self.end_time}, "
-                f"slope={self.slope}, use_estimated_slope={self.use_estimated_slope})")

@@ -44,10 +44,8 @@ class WellService:
             if well_data is None:
                 return WellResult(False, 'Error: Check errors.log for more info.', None)
             
-            # Ask the user if they want to enter the slope manually or estimate it
-            use_estimated_slope = app_config.use_estimated_slope
-            
-            if use_estimated_slope == True:
+            # Check if they want to  the slope manually or estimate it
+            if app_config.use_estimated_slope == True:
                 slope = self.estimate_slope(well_data, start_time)
             else:
                 slope = float(app_config.slope)
@@ -58,7 +56,7 @@ class WellService:
             if filtered_data is None:
                 return WellResult(False, 'Error: Check errors.log for more info.', slope)
 
-            # Detrend data based on the given slope
+            # Detrend data based on the slope
             detrended_data, trend_data = self.detrend_data(filtered_data, start_time, end_time, slope)
             
             if detrended_data is None or trend_data is None:
@@ -137,20 +135,31 @@ class WellService:
         Raises:
             ValueError: If there are not enough data points to estimate the slope.
         """
-        lower_time_limit = start_time - 24
-        pre_test_data = well_data[(well_data['Time'] >= lower_time_limit) & (well_data['Time'] < start_time)].dropna(subset=['Time', 'Pressure'])
+        try:
+            lower_time_limit = start_time - 24
+            pre_test_data = well_data[(well_data['Time'] >= lower_time_limit) & (well_data['Time'] < start_time)].dropna(subset=['Time', 'Pressure'])
 
-        if len(pre_test_data) < 2:
-            raise ValueError("Not enough data points to estimate slope. At least two points are required.")
+            if len(pre_test_data) < 2:
+                raise ValueError("Not enough data points to estimate slope. At least two points are required.")
 
-        time_data = pre_test_data['Time']
-        pressure_data = pre_test_data['Pressure']
+            time_data = pre_test_data['Time']
+            pressure_data = pre_test_data['Pressure']
 
-        slope, intercept, r_value, p_value, std_err = linregress(time_data, pressure_data)
+            # linregress outputs: slope, intercept, r_value, p_value, std_err 
+            slope, _, _, _, _ = linregress(time_data, pressure_data)
 
-        print(f"Estimated slope: {slope}")
-        return slope
-
+            print(f"Estimated slope: {slope}")
+            return slope
+        
+        except KeyError as e:
+            logging.error(e, exc_info=True)
+            return None
+        except ValueError as e:
+            logging.error(e, exc_info=True)
+            return None
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return None
 
     def filter_pressure_data(self, well_data: pd.DataFrame) -> pd.DataFrame:
         """
@@ -170,6 +179,7 @@ class WellService:
             if not pd.api.types.is_numeric_dtype(well_data['Pressure']):
                 raise ValueError("'Pressure' column contains non-numeric data.")
 
+            # O(n) time-complexity two pointer filtering:
             filtered_pressures = []
             filtered_time = []
             i = 0
@@ -187,7 +197,7 @@ class WellService:
                 'Time': filtered_time
             })
             
-            filtered_data = filtered_data.dropna(subset=['Pressure'])
+            filtered_data = filtered_data.dropna(subset=['Time', 'Pressure'])
             
             if filtered_data['Pressure'].empty:
                 raise ValueError("No data points meet the filtering criteria (pressure difference >= 0.5).")
@@ -219,30 +229,40 @@ class WellService:
             pd.DataFrame: Detrended data.
             pd.DataFrame: Trend data.
         """
-        well_data['Time'] = well_data['Time'].astype(float)
+        try:
+            well_data['Time'] = well_data['Time'].astype(float)
 
-        start_time_window = start_time - 24
-        closest_start_time_idx = (well_data['Time'] - start_time).abs().idxmin()
-        start_pressure = well_data.loc[closest_start_time_idx, 'Pressure']
+            start_time_window = start_time - 24
+            closest_start_time_idx = (well_data['Time'] - start_time).abs().idxmin()
+            start_pressure = well_data.loc[closest_start_time_idx, 'Pressure']
 
-        extended_time = pd.Series(np.linspace(start_time_window, end_time, num=100))  
-        trend_pressure = start_pressure + slope * (extended_time - start_time)  
+            extended_time = pd.Series(np.linspace(start_time_window, end_time, num=100))  
+            trend_pressure = start_pressure + slope * (extended_time - start_time)  
 
-        trend_data = pd.DataFrame({
-            'Time': extended_time,
-            'Trend Pressure': trend_pressure
-        })
+            trend_data = pd.DataFrame({
+                'Time': extended_time,
+                'Trend Pressure': trend_pressure
+            })
 
-        well_data['Trend Pressure'] = start_pressure + slope * (well_data['Time'] - start_time)
-        detrended_data = pd.DataFrame({
-            'Time': well_data['Time'],
-            'Detrended Pressure': well_data['Pressure'] - well_data['Trend Pressure']
-        })
-        
-        detrended_data = detrended_data[(detrended_data['Time'] >= start_time) & (detrended_data['Time'] <= end_time)].copy()
+            well_data['Trend Pressure'] = start_pressure + slope * (well_data['Time'] - start_time)
+            detrended_data = pd.DataFrame({
+                'Time': well_data['Time'],
+                'Detrended Pressure': well_data['Pressure'] - well_data['Trend Pressure']
+            })
+            
+            detrended_data = detrended_data[(detrended_data['Time'] >= start_time) & (detrended_data['Time'] <= end_time)]
 
-        return detrended_data, trend_data
+            return detrended_data, trend_data
 
+        except KeyError as e:
+            logging.error(e, exc_info=True)
+            return None
+        except ValueError as e:
+            logging.error(e, exc_info=True)
+            return None
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return None
 
     def save_output(self, filtered_data: pd.DataFrame, detrended_data: pd.DataFrame, trend_data: pd.DataFrame, start_time: float, end_time: float):
         """
@@ -255,19 +275,29 @@ class WellService:
             start_time (float): The start time of the test.
             end_time (float): The end time of the test.
         """
-        pre_start_time = start_time - 24
-        observed_data = filtered_data[(filtered_data['Time'] >= pre_start_time) & (filtered_data['Time'] <= end_time)]
-        observed_data = pd.DataFrame({
-            'Time': observed_data['Time'],
-            'Pressure': observed_data['Pressure']
-        })
+        try:
+            pre_start_time = start_time - 24
+            observed_data = filtered_data[(filtered_data['Time'] >= pre_start_time) & (filtered_data['Time'] <= end_time)]
+            observed_data = pd.DataFrame({
+                'Time': observed_data['Time'],
+                'Pressure': observed_data['Pressure']
+            })
 
-        app_config = self.app_config
-        observed_data.to_csv(app_config.output_folder + app_config.observed_filename, index=False)
-        detrended_data.to_csv(app_config.output_folder + app_config.detrended_filename, index=False)
-        trend_data.to_csv(app_config.output_folder + app_config.trend_filename, index=False)
-        print(f"Data saved to '{app_config.observed_filename}', '{app_config.detrended_filename}', and '{app_config.trend_filename}'")
+            app_config = self.app_config
+            observed_data.to_csv(app_config.output_folder + app_config.observed_filename, index=False)
+            detrended_data.to_csv(app_config.output_folder + app_config.detrended_filename, index=False)
+            trend_data.to_csv(app_config.output_folder + app_config.trend_filename, index=False)
+            print(f"Data saved to '{app_config.observed_filename}', '{app_config.detrended_filename}', and '{app_config.trend_filename}'")
 
+        except KeyError as e:
+            logging.error(e, exc_info=True)
+            return None
+        except ValueError as e:
+            logging.error(e, exc_info=True)
+            return None
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return None
 
     def plot_data(self, start_time: float, end_time: float, slope: float):
         """
@@ -277,28 +307,39 @@ class WellService:
             start_time (float): The start time for plotting.
             end_time (float): The end time for plotting.
         """
-        app_config = self.app_config
-        filtered_data = pd.read_csv(app_config.output_folder + app_config.observed_filename)
-        detrended_data = pd.read_csv(app_config.output_folder + app_config.detrended_filename)
-        trend_data = pd.read_csv(app_config.output_folder + app_config.trend_filename)
-        
-        start_time_window = start_time - 24
+        try:
+            app_config = self.app_config
+            filtered_data = pd.read_csv(app_config.output_folder + app_config.observed_filename)
+            detrended_data = pd.read_csv(app_config.output_folder + app_config.detrended_filename)
+            trend_data = pd.read_csv(app_config.output_folder + app_config.trend_filename)
+            
+            start_time_window = start_time - 24
 
-        filtered_data = filtered_data[(filtered_data['Time'] >= start_time_window) & (filtered_data['Time'] <= end_time)]
-        detrended_data = detrended_data[(detrended_data['Time'] >= start_time_window) & (detrended_data['Time'] <= end_time)]
-        trend_data = trend_data[(trend_data['Time'] >= start_time_window) & (trend_data['Time'] <= end_time)]
+            filtered_data = filtered_data[(filtered_data['Time'] >= start_time_window) & (filtered_data['Time'] <= end_time)]
+            detrended_data = detrended_data[(detrended_data['Time'] >= start_time_window) & (detrended_data['Time'] <= end_time)]
+            trend_data = trend_data[(trend_data['Time'] >= start_time_window) & (trend_data['Time'] <= end_time)]
 
-        plt.rcParams.update({'font.size': 14})
-        plt.figure(figsize=(10, 6))
+            plt.rcParams.update({'font.size': 14})
+            plt.figure(figsize=(10, 6))
 
-        plt.scatter(filtered_data['Time'], filtered_data['Pressure'], label='Observed Pressure', color='blue')
-        plt.plot(trend_data['Time'], trend_data['Trend Pressure'], label=f"Pre-interference linear trend [m={round(slope,2)}]", linestyle='--', color='orange')
-        plt.axvline(x=start_time, color='black', linestyle='-', label='Start Time')
-        plt.plot(detrended_data['Time'], detrended_data['Detrended Pressure'], label='Detrended Pressure', linestyle='-.', color='red')
+            plt.scatter(filtered_data['Time'], filtered_data['Pressure'], label='Observed Pressure', color='blue')
+            plt.plot(trend_data['Time'], trend_data['Trend Pressure'], label=f"Pre-interference linear trend [m={round(slope,2)}]", linestyle='--', color='orange')
+            plt.axvline(x=start_time, color='black', linestyle='-', label='Start Time')
+            plt.plot(detrended_data['Time'], detrended_data['Detrended Pressure'], label='Detrended Pressure', linestyle='-.', color='red')
 
-        plt.title('Well Pressure Observation vs Time')
-        plt.xlabel('Time (Hours)', fontsize=16)
-        plt.ylabel('Monitoring well BHP (psi)', fontsize=16)
-        plt.legend(loc='lower left')
-        plt.grid(True)
-        plt.show()
+            plt.title('Well Pressure Observation vs Time')
+            plt.xlabel('Time (Hours)', fontsize=16)
+            plt.ylabel('Monitoring well BHP (psi)', fontsize=16)
+            plt.legend(loc='lower left')
+            plt.grid(True)
+            plt.show()
+
+        except KeyError as e:
+            logging.error(e, exc_info=True)
+            return None
+        except ValueError as e:
+            logging.error(e, exc_info=True)
+            return None
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return None        

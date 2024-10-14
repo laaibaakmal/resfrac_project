@@ -11,6 +11,10 @@ class Program:
         return result
 
 # Starting point of project
-program: Program = Program()
-result: WellResult = program.parse_data()
-print(result.message)
+def main():
+    program: Program = Program()
+    result: WellResult = program.parse_data()
+    print(result.message)
+
+if __name__ == '__main__':
+    main()
